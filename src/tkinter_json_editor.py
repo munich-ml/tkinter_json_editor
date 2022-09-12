@@ -20,8 +20,10 @@ class JSONTreeFrame(ttk.Frame):
         tree_frame.rowconfigure(0, weight=1)
         tree_frame.columnconfigure(0, weight=1)
         
-        self.tree = ttk.Treeview(tree_frame)
+        self.tree = ttk.Treeview(tree_frame, columns=("#1", ))
         self.tree.grid(row=0, column=0, sticky="nsew")
+        self.tree.heading("#0", text="field")
+        self.tree.heading("#1", text="value")
         ysb = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=ysb.set)
         ysb.grid(row=0, column=1, sticky="ns")        
@@ -37,10 +39,29 @@ class JSONTreeFrame(ttk.Frame):
                 obj = json.load(file)
         except Exception as e:
             messagebox.showwarning(title="Warning", message=f"Could not open '{fp}'!")
-            return
+        else:        
+            self.delete_tree_nodes()
+            self.insert_tree_node(file.name, value=obj)
+
+
+    def insert_tree_node(self, field, value, node=''):
+        if type(value) is dict:
+            node = self.tree.insert(node, tk.END, text=field)
+            for key, val in value.items():
+                self.insert_tree_node(key, val, node)
+                
+        elif type(value) is list:
+            node = self.tree.insert(node, tk.END, text=field)
+            for i, val in enumerate(value):
+                self.insert_tree_node(i, val, node)
+
+        else:
+            self.tree.insert(node, tk.END, text=field, values=[value])        
         
-        print(fp)
-        print(obj)
+        
+    def delete_tree_nodes(self):
+        for i in self.tree.get_children():
+            self.tree.delete(i)
 
 
 if __name__ == '__main__':
