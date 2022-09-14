@@ -21,6 +21,7 @@ class JSONTreeFrame(ttk.Frame):
         tree_frame.pack(fill=tk.BOTH, expand=True)
         tree_frame.rowconfigure(0, weight=1)
         tree_frame.columnconfigure(0, weight=1)
+        self.tree_frame = tree_frame
         
         self.tree = ttk.Treeview(tree_frame, columns=("#1", ))
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -29,8 +30,57 @@ class JSONTreeFrame(ttk.Frame):
         ysb = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=ysb.set)
         ysb.grid(row=0, column=1, sticky="ns")        
+        self.tree.bind("<Double-1>", self.on_double_click)
 
 
+    def on_double_click(self, event: tk.Event) -> None:
+        region = self.tree.identify_region(event.x, event.y)
+        # region is "tree" if the field column is double clicked and "cell" for value column
+        if region not in ("tree", "cell"):
+            return
+        
+        selected_node = self.tree.focus()  # node id like "I001"
+        selected_item = self.tree.item(selected_node)
+        
+        if region == "tree":
+            selected_text = selected_item["text"]
+        else:
+            try:
+                selected_text = selected_item["values"][0]
+            except IndexError:   # This happens in list and dict rows and value column -> not editable
+                return
+            
+        print(selected_item["tags"], selected_text)
+        
+        selected_col = {"tree": "#0", "cell": "#1"}[region]
+        x, y, w, h = self.tree.bbox(selected_node, selected_col)  # bounding box of selected cell
+        
+        edit_str = ttk.Entry(self.tree_frame, width=w)
+        edit_str.editing_node = selected_node    
+        edit_str.editing_region = region
+        edit_str.insert(0, selected_text)
+        edit_str.select_range(0, tk.END)
+        edit_str.focus()
+        edit_str.bind("<FocusOut>", self.on_focus_out)
+        edit_str.bind("<Return>", self.on_enter_pressed)
+        
+        edit_str.place(x=x, y=y, width=w, height=h)
+        
+        
+    def on_enter_pressed(self, event: tk.Event) -> None:
+        new_text = event.widget.get()
+        if event.widget.editing_region == "tree":
+            self.tree.item(event.widget.editing_node, text=new_text)
+        else:
+            self.tree.item(event.widget.editing_node, values=[new_text])
+            
+        event.widget.destroy()
+        
+
+    def on_focus_out(self, event: tk.Event) -> None:
+        event.widget.destroy()
+        
+        
     def load_json_file(self) -> None:
         """Launches a filepicker to select a file, that will be read as json and inserted into the tree.
         """
@@ -49,6 +99,8 @@ class JSONTreeFrame(ttk.Frame):
 
 
     def save_json_file(self):
+        """Launches a filepicker and saves the current tree content as json to that file path.
+        """
         fp = filedialog.asksaveasfilename(filetypes=[("JSON files", "*.json"), ("All Files", "*.*")])
         if not fp:
             return
