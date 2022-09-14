@@ -1,3 +1,4 @@
+from email.errors import ObsoleteHeaderDefect
 import json, os
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -14,6 +15,7 @@ class JSONTreeFrame(ttk.Frame):
         self.control_frame.pack(fill=tk.X)
         tk.Label(self.control_frame, text="control_frame").pack(side=tk.LEFT)
         ttk.Button(self.control_frame, text="load JSON file", command=self.load_json_file).pack(side=tk.RIGHT)
+        ttk.Button(self.control_frame, text="save JSON file", command=self.save_json_file).pack(side=tk.RIGHT)
         
         tree_frame = ttk.Frame(self)
         tree_frame.pack(fill=tk.BOTH, expand=True)
@@ -44,25 +46,71 @@ class JSONTreeFrame(ttk.Frame):
             self.insert_tree_node(file.name, value=obj)
 
 
-    def insert_tree_node(self, field, value, node=''):
+    def save_json_file(self):
+        obj = self.extract_obj_from_tree()
+        print(obj)
+        
+
+    def insert_tree_node(self, field: str, value= object, node: str = '') -> None:
+        type_tag = str(type(value)).split("'")[1]
         if type(value) is dict:
-            node = self.tree.insert(node, tk.END, text=field)
+            node = self.tree.insert(node, tk.END, text=field, tags=type_tag)
             for key, val in value.items():
                 self.insert_tree_node(key, val, node)
                 
         elif type(value) is list:
-            node = self.tree.insert(node, tk.END, text=field)
+            node = self.tree.insert(node, tk.END, text=field, tags=type_tag)
             for i, val in enumerate(value):
                 self.insert_tree_node(i, val, node)
 
         else:
-            self.tree.insert(node, tk.END, text=field, values=[value])        
+            self.tree.insert(node, tk.END, text=field, values=[value], tags=type_tag)        
         
         
     def delete_tree_nodes(self):
         for i in self.tree.get_children():
             self.tree.delete(i)
 
+
+    def extract_obj_from_tree(self, node: str = "I001") -> object:
+        """Extracts the (json-able) Python object from the tree (Tkinter TreeView)
+
+        Args:
+            node (str, optional): TreeView node reference. Defaults to "I001" (root).
+
+        Returns:
+            object: Python object extracted from the treeview
+        """
+        if self.tree.tag_has("dict", node):
+            obj = {}
+            for child in self.tree.get_children(node):
+                obj[self.tree.item(child)["text"]] = self.extract_obj_from_tree(child)
+            return obj
+                
+        if self.tree.tag_has("list", node):
+            return [self.extract_obj_from_tree(child) for child in self.tree.get_children(node)]
+        
+        if self.tree.tag_has("NoneType", node):
+            return None
+        
+        obj = self.tree.item(node)['values'][0]
+        
+        if self.tree.tag_has("bool", node):
+            return obj == "True"
+        
+        if self.tree.tag_has("int", node):
+            try:
+                return int(obj)
+            except ValueError:
+                return obj
+            
+        if self.tree.tag_has("float", node):
+            try:
+                return float(obj)
+            except ValueError:
+                return obj        
+        
+        return obj  # that covers the regular 'str' type
 
 if __name__ == '__main__':
     app = tk.Tk()
