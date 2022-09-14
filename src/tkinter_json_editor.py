@@ -35,7 +35,7 @@ class JSONTreeFrame(ttk.Frame):
         """Launches a filepicker to select a file, that will be read as json and inserted into the tree.
         """
         fp = filedialog.askopenfilename(filetypes=[("JSON files", "*.json"), ("All Files", "*.*")])
-        if fp is None:
+        if not fp:
             return
         
         try:
@@ -49,10 +49,10 @@ class JSONTreeFrame(ttk.Frame):
 
 
     def save_json_file(self):
-        fp = filedialog.asksaveasfilename()
-        if fp is None:
+        fp = filedialog.asksaveasfilename(filetypes=[("JSON files", "*.json"), ("All Files", "*.*")])
+        if not fp:
             return
-        
+
         obj = self.extract_obj_from_tree()
         try:
             with open(fp, "w") as file:
