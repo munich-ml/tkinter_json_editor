@@ -31,7 +31,9 @@ class JSONTreeFrame(ttk.Frame):
         ysb.grid(row=0, column=1, sticky="ns")        
 
 
-    def load_json_file(self):
+    def load_json_file(self) -> None:
+        """Launches a filepicker to select a file, that will be read as json and inserted into the tree.
+        """
         fp = filedialog.askopenfilename(filetypes=[("JSON files", "*.json"), ("All Files", "*.*")])
         if fp is None:
             return
@@ -47,11 +49,27 @@ class JSONTreeFrame(ttk.Frame):
 
 
     def save_json_file(self):
+        fp = filedialog.asksaveasfilename()
+        if fp is None:
+            return
+        
         obj = self.extract_obj_from_tree()
-        print(obj)
+        try:
+            with open(fp, "w") as file:
+                json.dump(obj, file)
+        except Exception as e:
+            messagebox.showwarning(title="Warning", message=f"Could not open '{fp}'!")
         
 
-    def insert_tree_node(self, field: str, value= object, node: str = '') -> None:
+    def insert_tree_node(self, field: str, value: object, node: str = '') -> None:
+        """Inserts a tree node (consisting of field name and value) at the node (tree position).
+        If value is a (JSON-able) tree object (incl. lists and dicts) it will be inserted hierarchically.
+
+        Args:
+            field (str): field name in the tree
+            value (JSON-able object): Value in the tree
+            node (str, optional): _description_. Defaults to ''.
+        """
         type_tag = str(type(value)).split("'")[1]
         if type(value) is dict:
             node = self.tree.insert(node, tk.END, text=field, tags=type_tag)
@@ -68,12 +86,12 @@ class JSONTreeFrame(ttk.Frame):
         
         
     def delete_tree_nodes(self):
-        for i in self.tree.get_children():
-            self.tree.delete(i)
+        for child in self.tree.get_children():
+            self.tree.delete(child)
 
 
     def extract_obj_from_tree(self, node: str = "I001") -> object:
-        """Extracts the (json-able) Python object from the tree (Tkinter TreeView)
+        """Extracts the (JSON-able) Python object from the tree (Tkinter TreeView)
 
         Args:
             node (str, optional): TreeView node reference. Defaults to "I001" (root).
@@ -81,6 +99,9 @@ class JSONTreeFrame(ttk.Frame):
         Returns:
             object: Python object extracted from the treeview
         """
+        if not self.tree.exists(node):
+            return None
+        
         if self.tree.tag_has("dict", node):
             obj = {}
             for child in self.tree.get_children(node):
