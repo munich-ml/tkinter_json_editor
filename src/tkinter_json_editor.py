@@ -1,8 +1,8 @@
-from email.errors import ObsoleteHeaderDefect
-import json, os
+
+import json, os, time
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkinter import filedialog, font, messagebox, Tk
+from tkinter import filedialog, messagebox
 
 
 
@@ -13,9 +13,8 @@ class JSONTreeFrame(ttk.Frame):
         self.pack(fill=tk.BOTH, expand=True)
         self.control_frame = ttk.Frame(self)
         self.control_frame.pack(fill=tk.X)
-        tk.Label(self.control_frame, text="control_frame").pack(side=tk.LEFT)
-        ttk.Button(self.control_frame, text="load JSON file", command=self.load_json_file).pack(side=tk.RIGHT)
-        ttk.Button(self.control_frame, text="save JSON file", command=self.save_json_file).pack(side=tk.RIGHT)
+        ttk.Button(self.control_frame, text="load JSON file", command=self.load_json_file).pack(side=tk.LEFT)
+        ttk.Button(self.control_frame, text="save JSON file", command=self.save_json_file).pack(side=tk.LEFT)
         
         tree_frame = ttk.Frame(self)
         tree_frame.pack(fill=tk.BOTH, expand=True)
@@ -57,23 +56,21 @@ class JSONTreeFrame(ttk.Frame):
                 selected_value = selected_item["values"][0]
             except IndexError:   # This happens in list and dict rows and value column -> not editable
                 return
-            
-        print(selected_item["tags"], selected_value)
         
         selected_col = {"tree": "#0", "cell": "#1"}[region]
         x, y, w, h = self.tree.bbox(selected_node, selected_col)  # bounding box of selected cell
         
-        edit_str = ttk.Entry(self.tree_frame, width=w)
-        edit_str.editing_node = selected_node  # store node in the widget object for later use 
-        edit_str.editing_region = region       # store region in the widget object for later use 
-        edit_str.insert(0, selected_value)      # insert selected text in the entry widget    
-        edit_str.select_range(0, tk.END)
-        edit_str.focus()
-        edit_str.bind("<FocusOut>", self.on_focus_out)
-        edit_str.bind("<Return>", self.on_enter_pressed)
-        edit_str.place(x=x, y=y, width=w, height=h)
-        
-        
+        widget = ttk.Entry(self.tree_frame, width=w)
+        widget.editing_node = selected_node  # store node in the widget object for later use 
+        widget.editing_region = region       # store region in the widget object for later use 
+        widget.insert(0, selected_value)      # insert selected text in the entry widget    
+        widget.select_range(0, tk.END)
+        widget.focus()
+        widget.bind("<Return>", self.on_enter_pressed)
+        widget.bind("<FocusOut>", self.on_focus_out)            
+        widget.place(x=x, y=y, width=w, height=h)
+
+    
     def on_enter_pressed(self, event: tk.Event) -> None:
         """Handle enter pressed events of the Entry widget
 
@@ -89,15 +86,25 @@ class JSONTreeFrame(ttk.Frame):
                 try:
                     new_text = int(new_text)
                 except:
-                    pass
+                    event.widget.destroy()  # don't do a change
+                    return  
             elif "float" in tags:
                 try:
-                    new_text = float(new_text)
+                    new_text = float(str(new_text).replace(",", "."))
                 except:
-                    pass
-            self.tree.item(event.widget.editing_node, values=[new_text])
+                    event.widget.destroy()  # don't do a change
+                    return 
+            elif "bool" in tags:
+                if str(new_text).lower() in ("0", "f", "false"):
+                    new_text = False
+                elif str(new_text).lower() in ("1", "t", "true"):
+                    new_text = True
+                else:
+                    event.widget.destroy()  # don't do a change
+                    return 
                     
-            
+            self.tree.item(event.widget.editing_node, values=[new_text])
+                       
         event.widget.destroy()
         
 
