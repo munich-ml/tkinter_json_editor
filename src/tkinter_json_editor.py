@@ -34,6 +34,11 @@ class JSONTreeFrame(ttk.Frame):
 
 
     def on_double_click(self, event: tk.Event) -> None:
+        """Handle double click events on the tree (Tk.treeview) widget
+
+        Args:
+            event (tk.Event): event.x/y hold the x/y coordinates of the click event
+        """
         region = self.tree.identify_region(event.x, event.y)
         # region is "tree" if the field column is double clicked and "cell" for value column
         if region not in ("tree", "cell"):
@@ -42,42 +47,66 @@ class JSONTreeFrame(ttk.Frame):
         selected_node = self.tree.focus()  # node id like "I001"
         selected_item = self.tree.item(selected_node)
         
+        if "NoneType" in selected_item["tags"]:
+            return  # no editing of NoneType items
+        
         if region == "tree":
-            selected_text = selected_item["text"]
+            selected_value = selected_item["text"]
         else:
             try:
-                selected_text = selected_item["values"][0]
+                selected_value = selected_item["values"][0]
             except IndexError:   # This happens in list and dict rows and value column -> not editable
                 return
             
-        print(selected_item["tags"], selected_text)
+        print(selected_item["tags"], selected_value)
         
         selected_col = {"tree": "#0", "cell": "#1"}[region]
         x, y, w, h = self.tree.bbox(selected_node, selected_col)  # bounding box of selected cell
         
         edit_str = ttk.Entry(self.tree_frame, width=w)
-        edit_str.editing_node = selected_node    
-        edit_str.editing_region = region
-        edit_str.insert(0, selected_text)
+        edit_str.editing_node = selected_node  # store node in the widget object for later use 
+        edit_str.editing_region = region       # store region in the widget object for later use 
+        edit_str.insert(0, selected_value)      # insert selected text in the entry widget    
         edit_str.select_range(0, tk.END)
         edit_str.focus()
         edit_str.bind("<FocusOut>", self.on_focus_out)
         edit_str.bind("<Return>", self.on_enter_pressed)
-        
         edit_str.place(x=x, y=y, width=w, height=h)
         
         
     def on_enter_pressed(self, event: tk.Event) -> None:
+        """Handle enter pressed events of the Entry widget
+
+        Args:
+            event (tk.Event): event.widget holds the source widget (tree)
+        """
         new_text = event.widget.get()
         if event.widget.editing_region == "tree":
             self.tree.item(event.widget.editing_node, text=new_text)
         else:
+            tags = self.tree.item(event.widget.editing_node)["tags"]
+            if "int" in tags:
+                try:
+                    new_text = int(new_text)
+                except:
+                    pass
+            elif "float" in tags:
+                try:
+                    new_text = float(new_text)
+                except:
+                    pass
             self.tree.item(event.widget.editing_node, values=[new_text])
+                    
             
         event.widget.destroy()
         
 
     def on_focus_out(self, event: tk.Event) -> None:
+        """Handles focus out events of the Entry widget
+
+        Args:
+            event (tk.Event): event.widget holds the source widget (tree)
+        """
         event.widget.destroy()
         
         
