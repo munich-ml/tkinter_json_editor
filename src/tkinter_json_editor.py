@@ -1,5 +1,5 @@
 
-import json, os, time
+import json
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import filedialog, messagebox
@@ -60,60 +60,59 @@ class JSONTreeFrame(ttk.Frame):
         selected_col = {"tree": "#0", "cell": "#1"}[region]
         x, y, w, h = self.tree.bbox(selected_node, selected_col)  # bounding box of selected cell
         
-        widget = ttk.Entry(self.tree_frame, width=w)
+        if "bool" in selected_item["tags"]:
+            self.is_checked = tk.BooleanVar(self.tree)
+            self.is_checked.set("True" == selected_value)
+            widget = ttk.Checkbutton(self.tree, onvalue=True, offvalue=False, variable=self.is_checked, width=w)
+            #widget.bind("<ButtonRelease>", self.on_checkbox_toggled)
+        else:
+            widget = ttk.Entry(self.tree_frame, width=w)
+            widget.insert(0, selected_value)      # insert selected text in the entry widget    
+            widget.select_range(0, tk.END)
+            widget.bind("<Return>", self.on_enter_pressed)  
+            
         widget.editing_node = selected_node  # store node in the widget object for later use 
         widget.editing_region = region       # store region in the widget object for later use 
-        widget.insert(0, selected_value)      # insert selected text in the entry widget    
-        widget.select_range(0, tk.END)
         widget.focus()
-        widget.bind("<Return>", self.on_enter_pressed)
         widget.bind("<FocusOut>", self.on_focus_out)            
         widget.place(x=x, y=y, width=w, height=h)
 
-    
+
     def on_enter_pressed(self, event: tk.Event) -> None:
-        """Handle enter pressed events of the Entry widget
+        self.tree_frame.focus()  # focus out of the Entry widget
 
-        Args:
-            event (tk.Event): event.widget holds the source widget (tree)
-        """
-        new_text = event.widget.get()
-        if event.widget.editing_region == "tree":
-            self.tree.item(event.widget.editing_node, text=new_text)
-        else:
-            tags = self.tree.item(event.widget.editing_node)["tags"]
-            if "int" in tags:
-                try:
-                    new_text = int(new_text)
-                except:
-                    event.widget.destroy()  # don't do a change
-                    return  
-            elif "float" in tags:
-                try:
-                    new_text = float(str(new_text).replace(",", "."))
-                except:
-                    event.widget.destroy()  # don't do a change
-                    return 
-            elif "bool" in tags:
-                if str(new_text).lower() in ("0", "f", "false"):
-                    new_text = False
-                elif str(new_text).lower() in ("1", "t", "true"):
-                    new_text = True
-                else:
-                    event.widget.destroy()  # don't do a change
-                    return 
-                    
-            self.tree.item(event.widget.editing_node, values=[new_text])
-                       
-        event.widget.destroy()
-        
-
+    
     def on_focus_out(self, event: tk.Event) -> None:
         """Handles focus out events of the Entry widget
 
         Args:
             event (tk.Event): event.widget holds the source widget (tree)
         """
+        if type(event.widget)==ttk.Checkbutton:
+            checked = "selected" in event.widget.state()
+            self.tree.item(event.widget.editing_node, values=[checked])
+        
+        elif type(event.widget)==ttk.Entry:
+            new_text = event.widget.get()
+            if event.widget.editing_region == "tree":
+                self.tree.item(event.widget.editing_node, text=new_text)
+            else:
+                tags = self.tree.item(event.widget.editing_node)["tags"]
+                if "int" in tags:
+                    try:
+                        new_text = int(new_text)
+                    except:
+                        event.widget.destroy()  # don't do a change
+                        return  
+                elif "float" in tags:
+                    try:
+                        new_text = float(str(new_text).replace(",", "."))
+                    except:
+                        event.widget.destroy()  # don't do a change
+                        return 
+                    
+                self.tree.item(event.widget.editing_node, values=[new_text])    
+                
         event.widget.destroy()
         
         
