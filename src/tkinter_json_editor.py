@@ -1,4 +1,5 @@
 import json
+from msilib.schema import ComboBox
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import filedialog, messagebox
@@ -31,6 +32,9 @@ class JSONTreeFrame(ttk.Frame):
         self.tree.configure(yscroll=ysb.set)
         ysb.grid(row=0, column=1, sticky="ns")        
         self.tree.bind("<Double-1>", self.on_double_click)
+        
+        with open("multiple_choice.json", "r") as file:
+            self.multiple_choice = json.load(file)
 
 
     def on_double_click(self, event: tk.Event) -> None:
@@ -65,16 +69,27 @@ class JSONTreeFrame(ttk.Frame):
             self.is_checked = tk.BooleanVar(self.tree)
             self.is_checked.set("True" == selected_value)
             widget = ttk.Checkbutton(self.tree, onvalue=True, offvalue=False, variable=self.is_checked, width=w)
+            
+        elif region != "tree" and selected_item["text"] in self.multiple_choice:
+            choices = self.multiple_choice[selected_item["text"]]
+            widget = ttk.Combobox(self.tree_frame, width=w, values=choices)
+            try:
+                idx = choices.index(selected_value)
+            except ValueError:
+                idx = 0
+            else:
+                widget.current(idx)
+            
         else:
             widget = ttk.Entry(self.tree_frame, width=w)
             widget.insert(0, selected_value)      # insert selected text in the entry widget    
             widget.select_range(0, tk.END)
-            widget.bind("<Return>", self.on_enter_pressed)  
             
         widget.editing_node = selected_node  # store node in the widget object for later use 
         widget.editing_region = region       # store region in the widget object for later use 
         widget.focus()
         widget.bind("<FocusOut>", self.on_focus_out)            
+        widget.bind("<Return>", self.on_enter_pressed)      
         widget.place(x=x, y=y, width=w, height=h)
 
 
@@ -103,8 +118,8 @@ class JSONTreeFrame(ttk.Frame):
         if type(event.widget)==ttk.Checkbutton:
             checked = "selected" in event.widget.state()
             self.tree.item(event.widget.editing_node, values=[checked])
-        
-        elif type(event.widget)==ttk.Entry:
+            
+        elif type(event.widget) in (ttk.Entry, ttk.Combobox):
             new_text = event.widget.get()
             if event.widget.editing_region == "tree":
                 self.tree.item(event.widget.editing_node, text=new_text)
