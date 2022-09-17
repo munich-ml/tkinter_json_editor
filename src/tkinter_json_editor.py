@@ -1,4 +1,3 @@
-
 import json
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -15,6 +14,8 @@ class JSONTreeFrame(ttk.Frame):
         self.control_frame.pack(fill=tk.X)
         ttk.Button(self.control_frame, text="load JSON file", command=self.load_json_file).pack(side=tk.LEFT)
         ttk.Button(self.control_frame, text="save JSON file", command=self.save_json_file).pack(side=tk.LEFT)
+        ttk.Button(self.control_frame, text="expand", command=self.expand_tree).pack(side=tk.LEFT)
+        ttk.Button(self.control_frame, text="collape", command=lambda: self.expand_tree(expand=False)).pack(side=tk.LEFT)
         
         tree_frame = ttk.Frame(self)
         tree_frame.pack(fill=tk.BOTH, expand=True)
@@ -64,7 +65,6 @@ class JSONTreeFrame(ttk.Frame):
             self.is_checked = tk.BooleanVar(self.tree)
             self.is_checked.set("True" == selected_value)
             widget = ttk.Checkbutton(self.tree, onvalue=True, offvalue=False, variable=self.is_checked, width=w)
-            #widget.bind("<ButtonRelease>", self.on_checkbox_toggled)
         else:
             widget = ttk.Entry(self.tree_frame, width=w)
             widget.insert(0, selected_value)      # insert selected text in the entry widget    
@@ -82,6 +82,18 @@ class JSONTreeFrame(ttk.Frame):
         self.tree_frame.focus()  # focus out of the Entry widget
 
     
+    def get_all_children(self, item: str = "") -> list[str]:
+        children = self.tree.get_children(item)
+        for child in children:
+            children += self.get_all_children(child)
+        return children
+    
+    
+    def expand_tree(self, expand: bool = True) -> None:
+        for item in self.get_all_children():
+            self.tree.item(item, open=expand)
+            
+            
     def on_focus_out(self, event: tk.Event) -> None:
         """Handles focus out events of the Entry widget
 
@@ -131,6 +143,7 @@ class JSONTreeFrame(ttk.Frame):
         else:        
             self.delete_tree_nodes()
             self.insert_tree_node(file.name, value=obj)
+            self.expand_tree()
 
 
     def save_json_file(self):
