@@ -1,5 +1,4 @@
-import json
-from msilib.schema import ComboBox
+import json, os
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import filedialog, messagebox
@@ -30,8 +29,9 @@ class JSONTreeFrame(ttk.Frame):
         ysb.grid(row=0, column=1, sticky="ns")        
         self.tree.bind("<Double-1>", self.on_double_click)
         
-        with open("multiple_choice.json", "r") as file:
-            self.multiple_choice = json.load(file)
+        self.path = os.path.dirname(__file__)
+        with open(os.path.join(self.path, "combo_choice.json"), "r") as file:
+            self.combo_choice = json.load(file)
 
 
     def on_double_click(self, event: tk.Event) -> None:
@@ -67,8 +67,8 @@ class JSONTreeFrame(ttk.Frame):
             self.is_checked.set("True" == selected_value)
             widget = ttk.Checkbutton(self.tree, onvalue=True, offvalue=False, variable=self.is_checked, width=w)
             
-        elif region != "tree" and selected_item["text"] in self.multiple_choice:
-            choices = self.multiple_choice[selected_item["text"]]
+        elif region != "tree" and selected_item["text"] in self.combo_choice:
+            choices = self.combo_choice[selected_item["text"]]
             widget = ttk.Combobox(self.tree_frame, width=w, values=choices)
             try:
                 idx = choices.index(selected_value)
@@ -144,7 +144,7 @@ class JSONTreeFrame(ttk.Frame):
     def load_json_file(self) -> None:
         """Launches a filepicker to select a file, that will be read as json and inserted into the tree.
         """
-        fp = filedialog.askopenfilename(filetypes=[("JSON files", "*.json"), ("All Files", "*.*")])
+        fp = filedialog.askopenfilename(initialdir=self.path, filetypes=[("JSON files", "*.json"), ("All Files", "*.*")])
         if not fp:
             return
         
@@ -162,7 +162,7 @@ class JSONTreeFrame(ttk.Frame):
     def save_json_file(self):
         """Launches a filepicker and saves the current tree content as json to that file path.
         """
-        fp = filedialog.asksaveasfilename(filetypes=[("JSON files", "*.json"), ("All Files", "*.*")])
+        fp = filedialog.asksaveasfilename(initialdir=self.path, filetypes=[("JSON files", "*.json"), ("All Files", "*.*")])
         if not fp:
             return
 
@@ -248,7 +248,7 @@ class JSONTreeFrame(ttk.Frame):
 
 if __name__ == '__main__':
     app = tk.Tk()
-    app.title('Tkinter JSON Editor')
-    app.geometry("500x500")
+    app.title('Tkinter JSON Editor1')
+    app.geometry("500x300")
     JSONTreeFrame(app)
     app.mainloop()

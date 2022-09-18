@@ -1,3 +1,9 @@
+"""
+Stackoverflow workaround for FocusOut Problem of ttk.Combobox
+https://stackoverflow.com/questions/66145976/behavior-of-focusout-event-of-ttk-combobox
+"""
+
+
 import tkinter as tk
 from tkinter import ttk
 
