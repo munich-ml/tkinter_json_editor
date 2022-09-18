@@ -4,10 +4,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import filedialog, messagebox
 
-
-
 class JSONTreeFrame(ttk.Frame):
-
     def __init__(self, master):
         super().__init__(master)
         self.pack(fill=tk.BOTH, expand=True)
@@ -88,27 +85,12 @@ class JSONTreeFrame(ttk.Frame):
         widget.editing_node = selected_node  # store node in the widget object for later use 
         widget.editing_region = region       # store region in the widget object for later use 
         widget.focus()
+        widget.bind("<Escape>", self.on_focus_out)            
         widget.bind("<FocusOut>", self.on_focus_out)            
         widget.bind("<Return>", self.on_enter_pressed)      
         widget.place(x=x, y=y, width=w, height=h)
 
 
-    def on_enter_pressed(self, event: tk.Event) -> None:
-        self.tree_frame.focus()  # focus out of the Entry widget
-
-    
-    def get_all_children(self, item: str = "") -> list[str]:
-        children = self.tree.get_children(item)
-        for child in children:
-            children += self.get_all_children(child)
-        return children
-    
-    
-    def expand_tree(self, expand: bool = True) -> None:
-        for item in self.get_all_children():
-            self.tree.item(item, open=expand)
-            
-            
     def on_focus_out(self, event: tk.Event) -> None:
         """Handles focus out events of the Entry widget
 
@@ -143,6 +125,22 @@ class JSONTreeFrame(ttk.Frame):
         event.widget.destroy()
         
         
+    def on_enter_pressed(self, event: tk.Event) -> None:
+        self.tree_frame.focus()  # focus out of the Entry widget
+
+    
+    def get_all_children(self, item: str = "") -> list[str]:
+        children = self.tree.get_children(item)
+        for child in children:
+            children += self.get_all_children(child)
+        return children
+    
+    
+    def expand_tree(self, expand: bool = True) -> None:
+        for item in self.get_all_children():
+            self.tree.item(item, open=expand)
+            
+                     
     def load_json_file(self) -> None:
         """Launches a filepicker to select a file, that will be read as json and inserted into the tree.
         """
