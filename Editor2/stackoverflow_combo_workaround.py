@@ -12,7 +12,7 @@ class EntryPopup(ttk.Entry):
 
     def __init__(self, parent, iid, col, text, **kwargs):
         super().__init__(parent, **kwargs)
-        self.tv = parent
+        self.tree = parent
         self.iid = iid
         self.col = col
 
@@ -25,9 +25,9 @@ class EntryPopup(ttk.Entry):
 
     def update(self):
         if self.col == '#0':
-            self.tv.item(self.iid, text=self.get())
+            self.tree.item(self.iid, text=self.get())
         else:
-            self.tv.set(self.iid, self.col, self.get())
+            self.tree.set(self.iid, self.col, self.get())
         self.destroy()
 
 
@@ -35,18 +35,18 @@ class ComboPopup(ttk.Combobox):
 
     def __init__(self, parent, iid, col, **kwargs):
         super().__init__(parent, **kwargs)
-        self.tv = parent
+        self.tree = parent
         self.iid = iid
         self.col = col
-        old_text = self.tv.set(iid, col)
-        self.set(old_text)
+
+        self.set(self.tree.set(iid, col))
 
         self.focus()
         self.bind("<Return>", lambda event: self.update())
         self.bind("<Escape>", lambda event: self.destroy())
 
     def update(self):
-        self.tv.set(self.iid, self.col, self.get())
+        self.tree.set(self.iid, self.col, self.get())
         self.destroy()
 
 
@@ -56,21 +56,20 @@ class TreeFrame(ttk.Frame):
         super().__init__(parent, *args, **kwargs)
         self.parent = parent
         self.popup = None
-
+        
         # Create Treeview
-        self.tree = ttk.Treeview(self.parent, column=('A', 'B'), selectmode='browse', height=7)
+        self.tree = ttk.Treeview(self.parent, column=('A', ), selectmode='browse', height=7)
         self.tree.pack(expand=True, fill='both', side='top')
 
         # Setup column heading
         self.tree.heading('#0', text=' Items', anchor='center')
         self.tree.heading('#1', text=' A', anchor='center')
-        self.tree.heading('#2', text=' B', anchor='center')
 
         self.tree.bind("<Button-1>", lambda event: self.close_cell_popup())
         self.tree.bind("<Double-Button-1>", self.on_double_click)
 
-        self.tree.insert('', 'end', text="First item", value=("A's value 1", "B's value 1"))
-        self.tree.insert('', 'end', text="Second item", value=("A's value 2", "B's value 2"))
+        self.tree.insert('', 'end', text="First item", value=("A's value 1", ))
+        self.tree.insert('', 'end', text="Second item", value=("A's value 2", ))
 
 
     def close_cell_popup(self):
