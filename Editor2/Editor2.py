@@ -34,6 +34,7 @@ class EntryPopup(ttk.Entry):
                 pass   # don't do a change if conversion fails
             else:  
                 self.tree.item(self.iid, values=[new_value])
+        self.tree.focus_set()
         self.destroy()
 
 
@@ -50,6 +51,7 @@ class ComboPopup(ttk.Combobox):
 
     def update(self):
         self.tree.item(self.iid, values=[self.get()])
+        self.tree.focus_set()
         self.destroy()
         
         
@@ -66,6 +68,7 @@ class CheckPopup(ttk.Checkbutton):
     def update(self):
         checked = "selected" in self.state()
         self.tree.item(self.iid, values=[checked])
+        self.tree.focus_set()
         self.destroy()
 
                 
@@ -86,7 +89,7 @@ class JSONTreeFrame(ttk.Frame):
         tree_frame.columnconfigure(0, weight=1)
         self.tree_frame = tree_frame
         
-        self.tree = ttk.Treeview(tree_frame, columns=("#1", ))
+        self.tree = ttk.Treeview(tree_frame, selectmode="browse", columns=("#1", ))
         self.tree.grid(row=0, column=0, sticky="nsew")
         self.tree.heading("#0", text="field")
         self.tree.heading("#1", text="value")
@@ -95,6 +98,7 @@ class JSONTreeFrame(ttk.Frame):
         ysb.grid(row=0, column=1, sticky="ns")        
         self.tree.bind("<Button-1>", lambda event: self.close_cell_popup())
         self.tree.bind("<Double-1>", self.on_double_click)
+        self.tree.bind("<Return>", self.on_return_press)
         
         self.popup = None    # Popup widget for cell editing
         
@@ -111,17 +115,25 @@ class JSONTreeFrame(ttk.Frame):
             self.popup = None
             
             
+    def on_return_press(self, event):
+        print(event, self.tree.focus())
+        self.make_popup(rowid=self.tree.focus(), column="#1")
+
+
     def on_double_click(self, event: tk.Event) -> None:
         """Handle double click events on the tree (Tk.treeview) widget
 
         Args:
             event (tk.Event): event.x/y hold the x/y coordinates of the click event
         """
-        self.close_cell_popup()
-
-        # What row and column was clicked on
         rowid = self.tree.identify_row(event.y)      # like "I001"
         column = self.tree.identify_column(event.x)  # like "#0"
+
+        self.make_popup(rowid, column)        
+
+
+    def make_popup(self, rowid, column):
+        self.close_cell_popup()
 
         if rowid == '':  # happens if clicked in empty space or header 
             return        
@@ -159,10 +171,6 @@ class JSONTreeFrame(ttk.Frame):
         self.popup.bind("<Escape>", lambda event: self.popup.destroy())   # would result in 3 copies
         
         self.popup.place(x=x, y=y, width=width, height=height, anchor='w')
-        
-        
-    def on_enter_pressed(self, event: tk.Event) -> None:
-        self.tree_frame.focus()  # focus out of the Entry widget
 
     
     def get_all_children(self, item: str = "") -> list[str]:
@@ -189,10 +197,18 @@ class JSONTreeFrame(ttk.Frame):
                 obj = json.load(file)
         except Exception as e:
             messagebox.showwarning(title="Warning", message=f"Could not open '{fp}'!")
-        else:        
-            self.delete_tree_nodes()
-            self.insert_tree_node(file.name, value=obj)
-            self.expand_tree()
+            return
+                
+        self.delete_tree_nodes()
+        self.insert_tree_node(file.name, value=obj)
+        self.expand_tree()
+        
+        # set selection and allow keyboard browsing
+        first = self.tree.get_children()[0]
+        self.tree.selection_set(first) # move selection
+        self.tree.focus(first) # move focus
+        self.tree.see(first) # scroll to show it
+        self.tree.focus_set()
 
 
     def save_json_file(self):
