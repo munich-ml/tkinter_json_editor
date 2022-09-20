@@ -266,7 +266,7 @@ class JSONTreeFrame(ttk.Frame):
         Returns:
             object: Python object extracted from the treeview
         """
-        if not self.tree.exists(node):
+        if not self.tree.exists(node) or self.tree.tag_has("NoneType", node):
             return None
         
         if self.tree.tag_has("dict", node):
@@ -277,26 +277,17 @@ class JSONTreeFrame(ttk.Frame):
                 
         if self.tree.tag_has("list", node):
             return [self.extract_obj_from_tree(child) for child in self.tree.get_children(node)]
-        
-        if self.tree.tag_has("NoneType", node):
-            return None
-        
+                
         obj = self.tree.item(node)['values'][0]
-        
-        if self.tree.tag_has("bool", node):
-            return obj == "True"
-        
-        if self.tree.tag_has("int", node):
-            try:
-                return int(obj)
-            except ValueError:
-                return obj
-            
-        if self.tree.tag_has("float", node):
-            try:
+        try:
+            if self.tree.tag_has("int", node):
+                return int(obj)            
+            if self.tree.tag_has("float", node):
                 return float(obj)
-            except ValueError:
-                return obj        
+            if self.tree.tag_has("bool", node):
+                return obj == "True"
+        except ValueError:
+            return obj        
         
         return obj  # that covers the regular 'str' type
 
