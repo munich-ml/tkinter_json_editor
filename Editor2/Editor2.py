@@ -41,9 +41,10 @@ class ComboPopup(ttk.Combobox):
     """Popup edit widget for str type fields with combo_choice
     """
     def __init__(self, parent, iid, inital_value, **kwargs):
-        super().__init__(parent, **kwargs)
+        super().__init__(parent, state="readonly", **kwargs)
         self.tree = parent
         self.iid = iid
+        self.choices = kwargs["values"]
 
         self.set(inital_value)
 
@@ -132,7 +133,8 @@ class JSONTreeFrame(ttk.Frame):
             return
                     
         elif column != "#0" and selected_item["text"] in self.combo_choice:
-            self.popup = ComboPopup(self.tree, rowid, selected_value, values=["a", "b"])
+            choices = self.combo_choice[selected_item["text"]]
+            self.popup = ComboPopup(self.tree, rowid, selected_value, values=choices)
             
         else:
             self.popup = EntryPopup(self.tree, rowid, column, selected_value)
