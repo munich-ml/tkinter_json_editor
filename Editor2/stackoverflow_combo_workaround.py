@@ -9,7 +9,6 @@ from tkinter import ttk
 
 
 class EntryPopup(ttk.Entry):
-
     def __init__(self, parent, iid, col, text, **kwargs):
         super().__init__(parent, **kwargs)
         self.tree = parent
@@ -18,10 +17,6 @@ class EntryPopup(ttk.Entry):
 
         self.insert(0, text)
         self.select_range(0, tk.END)
-
-        self.focus()
-        self.bind("<Return>", lambda event: self.update())
-        self.bind("<Escape>", lambda event: self.destroy())
 
     def update(self):
         if self.col == '#0':
@@ -32,7 +27,6 @@ class EntryPopup(ttk.Entry):
 
 
 class ComboPopup(ttk.Combobox):
-
     def __init__(self, parent, iid, col, text, **kwargs):
         super().__init__(parent, **kwargs)
         self.tree = parent
@@ -40,10 +34,6 @@ class ComboPopup(ttk.Combobox):
         self.col = col
 
         self.set(text)
-
-        self.focus()
-        self.bind("<Return>", lambda event: self.update())
-        self.bind("<Escape>", lambda event: self.destroy())
 
     def update(self):
         self.tree.set(self.iid, self.col, self.get())
@@ -105,6 +95,9 @@ class TreeFrame(ttk.Frame):
             text = self.tree.set(rowid, column)
             self.popup = ComboPopup(self.tree, rowid, column, text, values=("A", "b", "3"))
             
+        self.popup.focus()
+        self.popup.bind("<Return>", lambda event: self.popup.update())
+        self.popup.bind("<Escape>", lambda event: self.popup.destroy())
         self.popup.place(x=x, y=y, width=width, height=height, anchor='w')
 
 
