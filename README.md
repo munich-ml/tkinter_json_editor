@@ -35,4 +35,8 @@ Interacting with the __Combobox__ is no fun, because the `<FocusOut> Event` does
 https://stackoverflow.com/questions/66145976/behavior-of-focusout-event-of-ttk-combobox without having a solution - just a workaround which leads to Editor2.
 
 # Editor2
+Editor2 has the same functionality as Editor1 but solves the awkward Combobox behaviour of Editor1.
 
+Editor1 uses "self-contained" edit widgets. Its interactivity builds on the `event` object in the callbacks and that contains `event.widget` for manipulation. 
+
+In contrast, Editor2 holds the popup widget in the `JSONTreeFrame.popup` attribute.
