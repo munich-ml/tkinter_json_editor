@@ -73,7 +73,6 @@ class App(ttk.Frame):
         ttk.Frame.__init__(self, parent)
         self.parent = parent
         self.cellPopup = None
-        self.single_click = False
 
         # Create Treeview
         self.tree = ttk.Treeview(self.parent, column=('A', 'B'), selectmode='browse', height=7)
@@ -92,17 +91,13 @@ class App(ttk.Frame):
 
 
     def destroy_cell_popup(self):
-        print("destroy_cell_popup", self.single_click)
-        if self.single_click:
-            self.single_click = False
-            if self.cellPopup and self.cellPopup.winfo_exists():
-                self.cellPopup.close()
-                self.cellPopup = None
+        if self.cellPopup and self.cellPopup.winfo_exists():
+            self.cellPopup.close()
+            self.cellPopup = None
 
 
     def on_single_click(self, event):
         print("on_single_click", event)
-        self.single_click = True
         self.destroy_cell_popup()      
 
 
@@ -111,10 +106,7 @@ class App(ttk.Frame):
         Opens EntryPopup or ComboPopup above the item's column,
         so it is possible to select text """
         print("on_double_click", event)
-        self.single_click = False
-        if self.cellPopup and self.cellPopup.winfo_exists():
-            self.cellPopup.close()
-            self.cellPopup = None
+        self.destroy_cell_popup()
 
         # What row and column was clicked on
         rowid = self.tree.identify_row(event.y)
