@@ -166,10 +166,14 @@ class JSONTreeFrame(ttk.Frame):
             
         self.popup.focus()                                                # This code would usually be in 
         self.popup.bind("<Return>", lambda event: self.popup.update())    # the Popup __init__, but that 
-        self.popup.bind("<Escape>", lambda event: self.popup.destroy())   # would result in 3 copies
-        
+        self.popup.bind("<Escape>", self.on_escape)                       # would result in 3 copies  
         self.popup.place(x=x, y=y, width=width, height=height, anchor='w')
 
+
+    def on_escape(self, event):
+        self.tree.focus_set()
+        self.popup.destroy()
+        
     
     def get_all_children(self, item: str = "") -> list[str]:
         children = self.tree.get_children(item)
