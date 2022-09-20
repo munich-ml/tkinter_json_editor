@@ -10,8 +10,8 @@ from tkinter import ttk
 
 class EntryPopup(ttk.Entry):
 
-    def __init__(self, parent, iid, col, text, **kw):
-        super().__init__(parent, **kw)
+    def __init__(self, parent, iid, col, text, **kwargs):
+        super().__init__(parent, **kwargs)
         self.tv = parent
         self.iid = iid
         self.col = col
@@ -20,16 +20,10 @@ class EntryPopup(ttk.Entry):
         self.select_range(0, tk.END)
 
         self.focus_force()
-        self.bind("<Return>", self.on_return)
-        self.bind("<Escape>", self.on_escape)
+        self.bind("<Return>", lambda event: self.update())
+        self.bind("<Escape>", lambda event: self.destroy())
 
-    def on_return(self, event):
-        self.close()
-
-    def on_escape(self, event):
-        self.destroy()
-
-    def close(self):
+    def update(self):
         if self.col == '#0':
             self.tv.item(self.iid, text=self.get())
         else:
@@ -39,31 +33,20 @@ class EntryPopup(ttk.Entry):
 
 class ComboPopup(ttk.Combobox):
 
-    def __init__(self, parent, iid, col, **kw):
-        super().__init__(parent, **kw)
+    def __init__(self, parent, iid, col, **kwargs):
+        super().__init__(parent, **kwargs)
         self.tv = parent
         self.iid = iid
         self.col = col
-        self.old_text = self.tv.set(iid, col)
-        self.set(self.old_text)
+        old_text = self.tv.set(iid, col)
+        self.set(old_text)
 
         self.focus()
-        self.bind("<Escape>", self.on_escape)
-        self.bind("<<ComboboxSelected>>", self.new_selection)
-        self.bind("<Return>", self.on_return)
+        self.bind("<Return>", lambda event: self.update())
+        self.bind("<Escape>", lambda event: self.destroy())
 
-    def new_selection(self, event=None):
+    def update(self):
         self.tv.set(self.iid, self.col, self.get())
-
-    def on_return(self, event):
-        self.close()
-
-    def on_escape(self, event):
-        self.tv.set(self.iid, self.col, self.old_text)
-        self.destroy()
-
-    def close(self):
-        self.new_selection()
         self.destroy()
 
 
@@ -83,16 +66,16 @@ class TreeFrame(ttk.Frame):
         self.tree.heading('#1', text=' A', anchor='center')
         self.tree.heading('#2', text=' B', anchor='center')
 
-        self.tree.bind("<Button-1>", lambda event: self.destroy_cell_popup())
+        self.tree.bind("<Button-1>", lambda event: self.close_cell_popup())
         self.tree.bind("<Double-Button-1>", self.on_double_click)
 
         self.tree.insert('', 'end', text="First item", value=("A's value 1", "B's value 1"))
         self.tree.insert('', 'end', text="Second item", value=("A's value 2", "B's value 2"))
 
 
-    def destroy_cell_popup(self):
+    def close_cell_popup(self):
         if self.popup and self.popup.winfo_exists():
-            self.popup.close()
+            self.popup.update()
             self.popup = None
 
 
@@ -100,7 +83,7 @@ class TreeFrame(ttk.Frame):
         """ Executed, when a row is single or double-clicked.
         Opens EntryPopup or ComboPopup above the item's column,
         so it is possible to select text """
-        self.destroy_cell_popup()
+        self.close_cell_popup()
 
         # What row and column was clicked on
         rowid = self.tree.identify_row(event.y)      # like "I001"
