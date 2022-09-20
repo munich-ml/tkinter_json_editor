@@ -115,8 +115,7 @@ class JSONTreeFrame(ttk.Frame):
             self.popup = None
             
             
-    def on_return_press(self, event):
-        print(event, self.tree.focus())
+    def on_return_press(self, event: tk.Event) -> None:
         self.make_popup(rowid=self.tree.focus(), column="#1")
 
 
@@ -128,7 +127,6 @@ class JSONTreeFrame(ttk.Frame):
         """
         rowid = self.tree.identify_row(event.y)      # like "I001"
         column = self.tree.identify_column(event.x)  # like "#0"
-
         self.make_popup(rowid, column)        
 
 
