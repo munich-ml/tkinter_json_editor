@@ -109,8 +109,8 @@ class App(ttk.Frame):
         self.destroy_cell_popup()
 
         # What row and column was clicked on
-        rowid = self.tree.identify_row(event.y)
-        column = self.tree.identify_column(event.x)
+        rowid = self.tree.identify_row(event.y)      # like "I001"
+        column = self.tree.identify_column(event.x)  # like "#0"
 
         # Check if the double click was on some row or empty space
         if rowid == '':
@@ -118,9 +118,8 @@ class App(ttk.Frame):
 
         # get cell position info
         x, y, width, height = self.tree.bbox(rowid, column)
-
-        # y-axis offset
-        pady = height / 2
+        y += height / 2
+        height *= 1.2    # make the popup a little larger than the regular cell
 
         # place Entry popup properly
         if column == '#0':
@@ -128,11 +127,11 @@ class App(ttk.Frame):
             self.cellPopup = EntryPopup(self.tree, rowid, column, text)
         else:
             self.cellPopup = ComboPopup(self.tree, rowid, column, values=("A", "b", "3"))
-        self.cellPopup.place(x=x, y=y + pady, width=width, height=1.25 * height, anchor='w')
+        self.cellPopup.place(x=x, y=y, width=width, height=height, anchor='w')
 
 
 if __name__ == '__main__':
     root = tk.Tk()
-    root.geometry('900x600+300+300')
+    root.geometry('600x200+200+100')
     App(root)
     root.mainloop()
