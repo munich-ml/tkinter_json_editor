@@ -19,7 +19,7 @@ class EntryPopup(ttk.Entry):
         self.insert(0, text)
         self.select_range(0, tk.END)
 
-        self.focus_force()
+        self.focus()
         self.bind("<Return>", lambda event: self.update())
         self.bind("<Escape>", lambda event: self.destroy())
 
@@ -33,13 +33,13 @@ class EntryPopup(ttk.Entry):
 
 class ComboPopup(ttk.Combobox):
 
-    def __init__(self, parent, iid, col, **kwargs):
+    def __init__(self, parent, iid, col, text, **kwargs):
         super().__init__(parent, **kwargs)
         self.tree = parent
         self.iid = iid
         self.col = col
 
-        self.set(self.tree.set(iid, col))
+        self.set(text)
 
         self.focus()
         self.bind("<Return>", lambda event: self.update())
@@ -102,7 +102,8 @@ class TreeFrame(ttk.Frame):
             text = self.tree.item(rowid, 'text')
             self.popup = EntryPopup(self.tree, rowid, column, text)
         else:
-            self.popup = ComboPopup(self.tree, rowid, column, values=("A", "b", "3"))
+            text = self.tree.set(rowid, column)
+            self.popup = ComboPopup(self.tree, rowid, column, text, values=("A", "b", "3"))
             
         self.popup.place(x=x, y=y, width=width, height=height, anchor='w')
 
