@@ -1,0 +1,1 @@
+{"type": "test definition file", "ver": 1, "content": {"description": "-", "channels": [0, 8, 9], "linerate_Gbps": 10.3125, "pattern": "PRBS31", "8b10b": false, "results": null}}
