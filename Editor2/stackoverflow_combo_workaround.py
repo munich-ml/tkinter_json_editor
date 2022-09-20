@@ -70,9 +70,9 @@ class ComboPopup(ttk.Combobox):
 class App(ttk.Frame):
 
     def __init__(self, parent, *args, **kwargs):
-        ttk.Frame.__init__(self, parent)
+        super().__init__(parent, *args, **kwargs)
         self.parent = parent
-        self.cellPopup = None
+        self.popup = None
 
         # Create Treeview
         self.tree = ttk.Treeview(self.parent, column=('A', 'B'), selectmode='browse', height=7)
@@ -91,9 +91,9 @@ class App(ttk.Frame):
 
 
     def destroy_cell_popup(self):
-        if self.cellPopup and self.cellPopup.winfo_exists():
-            self.cellPopup.close()
-            self.cellPopup = None
+        if self.popup and self.popup.winfo_exists():
+            self.popup.close()
+            self.popup = None
 
 
     def on_double_click(self, event):
@@ -118,11 +118,11 @@ class App(ttk.Frame):
         # place Entry popup properly
         if column == '#0':
             text = self.tree.item(rowid, 'text')
-            self.cellPopup = EntryPopup(self.tree, rowid, column, text)
+            self.popup = EntryPopup(self.tree, rowid, column, text)
         else:
-            self.cellPopup = ComboPopup(self.tree, rowid, column, values=("A", "b", "3"))
+            self.popup = ComboPopup(self.tree, rowid, column, values=("A", "b", "3"))
             
-        self.cellPopup.place(x=x, y=y, width=width, height=height, anchor='w')
+        self.popup.place(x=x, y=y, width=width, height=height, anchor='w')
 
 
 if __name__ == '__main__':
