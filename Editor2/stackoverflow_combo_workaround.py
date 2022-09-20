@@ -67,7 +67,7 @@ class ComboPopup(ttk.Combobox):
         self.destroy()
 
 
-class App(ttk.Frame):
+class TreeFrame(ttk.Frame):
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -126,7 +126,7 @@ class App(ttk.Frame):
 
 
 if __name__ == '__main__':
-    root = tk.Tk()
-    root.geometry('600x200+200+100')
-    App(root)
-    root.mainloop()
+    app = tk.Tk()
+    app.geometry('600x200+200+100')
+    TreeFrame(app)
+    app.mainloop()
