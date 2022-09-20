@@ -53,6 +53,22 @@ class ComboPopup(ttk.Combobox):
         self.destroy()
         
         
+class CheckPopup(ttk.Checkbutton):
+    """Popup edit widget for bool type fields
+    """
+    def __init__(self, parent, iid, inital_value, **kwargs):
+        self.is_checked = tk.BooleanVar(parent)
+        self.is_checked.set("True" == inital_value)  # Treeview stores also bools as str!
+        super().__init__(parent, onvalue=True, offvalue=False, variable=self.is_checked, **kwargs)
+        self.tree = parent
+        self.iid = iid
+
+    def update(self):
+        checked = "selected" in self.state()
+        self.tree.item(self.iid, values=[checked])
+        self.destroy()
+
+                
 class JSONTreeFrame(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
@@ -129,8 +145,7 @@ class JSONTreeFrame(ttk.Frame):
         height *= 1.2    # make the popup a little larger than the regular cell
                 
         if "bool" in selected_item["tags"]:
-            print("not implemented, yet")
-            return
+            self.popup = CheckPopup(self.tree, rowid, selected_value)
                     
         elif column != "#0" and selected_item["text"] in self.combo_choice:
             choices = self.combo_choice[selected_item["text"]]
@@ -139,9 +154,10 @@ class JSONTreeFrame(ttk.Frame):
         else:
             self.popup = EntryPopup(self.tree, rowid, column, selected_value)
             
-        self.popup.focus()
-        self.popup.bind("<Return>", lambda event: self.popup.update())
-        self.popup.bind("<Escape>", lambda event: self.popup.destroy())
+        self.popup.focus()                                                # This code would usually be in 
+        self.popup.bind("<Return>", lambda event: self.popup.update())    # the Popup __init__, but that 
+        self.popup.bind("<Escape>", lambda event: self.popup.destroy())   # would result in 3 copies
+        
         self.popup.place(x=x, y=y, width=width, height=height, anchor='w')
         
         
@@ -268,7 +284,7 @@ class JSONTreeFrame(ttk.Frame):
 
 if __name__ == '__main__':
     app = tk.Tk()
-    app.title('Tkinter JSON Editor1')
-    app.geometry("500x300")
+    app.title('Tkinter JSON Editor2')
+    app.geometry("500x300-10+30")
     JSONTreeFrame(app)
     app.mainloop()
