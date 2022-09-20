@@ -84,32 +84,37 @@ class App(ttk.Frame):
         self.tree.heading('#1', text=' A', anchor='center')
         self.tree.heading('#2', text=' B', anchor='center')
 
-        self.tree.bind("<Double-Button-1>", lambda event: self.on_click(event, 101))
-        self.tree.bind("<Button-1>", lambda event: self.on_click(event, 1))
+        self.tree.bind("<Double-Button-1>", self.on_double_click)
+        self.tree.bind("<Button-1>", self.on_single_click)
 
         self.tree.insert('', 'end', text="First item", value=("A's value 1", "B's value 1"))
         self.tree.insert('', 'end', text="Second item", value=("A's value 2", "B's value 2"))
 
+
     def destroy_cell_popup(self):
+        print("destroy_cell_popup", self.single_click)
         if self.single_click:
             self.single_click = False
             if self.cellPopup and self.cellPopup.winfo_exists():
                 self.cellPopup.close()
                 self.cellPopup = None
 
-    def on_click(self, event, extra=None):
+
+    def on_single_click(self, event):
+        print("on_single_click", event)
+        self.single_click = True
+        self.destroy_cell_popup()      
+
+
+    def on_double_click(self, event):
         """ Executed, when a row is single or double-clicked.
         Opens EntryPopup or ComboPopup above the item's column,
         so it is possible to select text """
-        if extra == 1:
-            self.single_click = True
-            self.parent.after(200, self.destroy_cell_popup)
-            return
-        elif extra == 101:
-            self.single_click = False
-            if self.cellPopup and self.cellPopup.winfo_exists():
-                self.cellPopup.close()
-                self.cellPopup = None
+        print("on_double_click", event)
+        self.single_click = False
+        if self.cellPopup and self.cellPopup.winfo_exists():
+            self.cellPopup.close()
+            self.cellPopup = None
 
         # What row and column was clicked on
         rowid = self.tree.identify_row(event.y)
