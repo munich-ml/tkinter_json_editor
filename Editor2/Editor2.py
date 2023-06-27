@@ -197,7 +197,7 @@ class JSONTreeFrame(ttk.Frame):
         try:
             with open(fp, "r") as file:
                 obj = json.load(file)
-        except Exception as e:
+        except Exception:
             messagebox.showwarning(title="Warning", message=f"Could not open '{fp}'!")
             return
                 
@@ -207,9 +207,9 @@ class JSONTreeFrame(ttk.Frame):
         
         # set selection and allow keyboard browsing
         first = self.tree.get_children()[0]
-        self.tree.selection_set(first) # move selection
-        self.tree.focus(first) # move focus
-        self.tree.see(first) # scroll to show it
+        self.tree.selection_set(first)  # move selection
+        self.tree.focus(first)  # move focus
+        self.tree.see(first)  # scroll to show it
         self.tree.focus_set()
 
 
@@ -224,7 +224,7 @@ class JSONTreeFrame(ttk.Frame):
         try:
             with open(fp, "w") as file:
                 json.dump(obj, file)
-        except Exception as e:
+        except Exception:
             messagebox.showwarning(title="Warning", message=f"Could not open '{fp}'!")
         
 
@@ -290,6 +290,7 @@ class JSONTreeFrame(ttk.Frame):
             return obj        
         
         return obj  # that covers the regular 'str' type
+
 
 if __name__ == '__main__':
     app = tk.Tk()
