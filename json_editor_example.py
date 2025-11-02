@@ -70,8 +70,8 @@ class JSONEditorApp(ttk.Frame):
             messagebox.showwarning(title="Warning", message=f"Could not open '{fp}': {e}")
             return
 
-        # Use TreeEditFrame's load_data method with the filename as root
-        self.tree_editor.load_data(obj, root_name=os.path.basename(fp))
+        # Use TreeEditFrame's set_data method with the filename as root
+        self.tree_editor.set_data(obj, root_name=os.path.basename(fp))
 
     def save_json_file(self):
         """Launches a file picker and saves the current tree content as JSON to that file path.

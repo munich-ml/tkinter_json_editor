@@ -91,7 +91,7 @@ class TreeEditFrame(ttk.Frame):
     Example:
         frame = TreeEditFrame(parent, combo_choices={'pattern': ['opt1', 'opt2']})
         frame.pack(fill=tk.BOTH, expand=True)
-        frame.load_data({'key': 'value', 'nested': {'a': 1}})
+        frame.set_data({'key': 'value', 'nested': {'a': 1}})
         # ... user edits ...
         data = frame.get_data()
     """
@@ -128,8 +128,8 @@ class TreeEditFrame(ttk.Frame):
         """
         self.combo_choices = combo_choices
 
-    def load_data(self, data, root_name="root"):
-        """Load a Python object into the tree for viewing/editing.
+    def set_data(self, data, root_name="root"):
+        """Set a Python object into the tree for viewing/editing.
 
         Args:
             data: Python object (dict, list, or primitive) to load into the tree

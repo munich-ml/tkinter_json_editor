@@ -45,7 +45,7 @@ tree_editor.pack(fill=tk.BOTH, expand=True)
 
 # Load your data
 data = {'name': 'Example', 'value': 42, 'nested': {'key': 'value'}}
-tree_editor.load_data(data)
+tree_editor.set_data(data)
 
 # ... user edits the data ...
 
@@ -66,7 +66,7 @@ TreeEditFrame(master, combo_choices=None)
 - `combo_choices` (optional): Dict mapping field names to lists of valid choices
 
 **Methods:**
-- `load_data(data, root_name="root")` - Load Python object into tree
+- `set_data(data, root_name="root")` - Load Python object into tree
 - `get_data()` - Extract Python object from tree
 - `set_combo_choices(combo_choices)` - Update combo choices dictionary
 - `expand_tree(expand=True)` - Expand/collapse all tree nodes
