@@ -1,7 +1,12 @@
-import json, os
+"""
+TreeEditFrame - A reusable Tkinter component for editing hierarchical data structures.
+
+This module provides a Treeview-based widget that allows viewing and editing
+hierarchical data (dicts, lists, primitives) with type-aware popup editors.
+"""
+
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkinter import filedialog, messagebox
 
 
 class EntryPopup(ttk.Entry):
@@ -32,7 +37,7 @@ class EntryPopup(ttk.Entry):
                     new_value = float(new_value)
             except ValueError:
                 pass   # don't do a change if conversion fails
-            else:  
+            else:
                 self.tree.item(self.iid, values=[new_value])
         self.tree.focus_set()
         self.destroy()
@@ -53,8 +58,8 @@ class ComboPopup(ttk.Combobox):
         self.tree.item(self.iid, values=[self.get()])
         self.tree.focus_set()
         self.destroy()
-        
-        
+
+
 class CheckPopup(ttk.Checkbutton):
     """Popup edit widget for bool type fields
     """
@@ -71,41 +76,88 @@ class CheckPopup(ttk.Checkbutton):
         self.tree.focus_set()
         self.destroy()
 
-                
-class JSONTreeFrame(ttk.Frame):
-    def __init__(self, master):
+
+class TreeEditFrame(ttk.Frame):
+    """A reusable Tkinter frame for editing hierarchical data structures.
+
+    This component provides a Treeview widget with in-place editing capabilities
+    for hierarchical data structures (dicts, lists, and primitive types).
+
+    Args:
+        master: Parent Tkinter widget
+        combo_choices (dict, optional): Dictionary mapping field names to lists of choices
+                                       for dropdown selection. Defaults to None (empty dict).
+
+    Example:
+        frame = TreeEditFrame(parent, combo_choices={'pattern': ['opt1', 'opt2']})
+        frame.pack(fill=tk.BOTH, expand=True)
+        frame.load_data({'key': 'value', 'nested': {'a': 1}})
+        # ... user edits ...
+        data = frame.get_data()
+    """
+
+    def __init__(self, master, combo_choices=None):
         super().__init__(master)
         self.pack(fill=tk.BOTH, expand=True)
-        self.control_frame = ttk.Frame(self)
-        self.control_frame.pack(fill=tk.X)
-        ttk.Button(self.control_frame, text="load JSON file", command=self.load_json_file).pack(side=tk.LEFT)
-        ttk.Button(self.control_frame, text="save JSON file", command=self.save_json_file).pack(side=tk.LEFT)
-        ttk.Button(self.control_frame, text="expand", command=self.expand_tree).pack(side=tk.LEFT)
-        ttk.Button(self.control_frame, text="collapse", command=lambda: self.expand_tree(expand=False)).pack(side=tk.LEFT)
-        
+
         tree_frame = ttk.Frame(self)
         tree_frame.pack(fill=tk.BOTH, expand=True)
         tree_frame.rowconfigure(0, weight=1)
         tree_frame.columnconfigure(0, weight=1)
         self.tree_frame = tree_frame
-        
+
         self.tree = ttk.Treeview(tree_frame, selectmode="browse", columns=("#1", ))
         self.tree.grid(row=0, column=0, sticky="nsew")
         self.tree.heading("#0", text="field")
         self.tree.heading("#1", text="value")
         ysb = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=ysb.set)
-        ysb.grid(row=0, column=1, sticky="ns")        
+        ysb.grid(row=0, column=1, sticky="ns")
         self.tree.bind("<Button-1>", lambda event: self.close_cell_popup())
         self.tree.bind("<Double-1>", self.on_double_click)
         self.tree.bind("<Return>", self.on_return_press)
-        
-        self.popup = None    # Popup widget for cell editing
-        
-        self.path = os.path.dirname(__file__)
-        with open(os.path.join(self.path, "combo_choice.json"), "r") as file:
-            self.combo_choice = json.load(file)
 
+        self.popup = None    # Popup widget for cell editing
+        self.combo_choices = combo_choices if combo_choices is not None else {}
+
+    def set_combo_choices(self, combo_choices):
+        """Update the combo choices dictionary for dropdown field selection.
+
+        Args:
+            combo_choices (dict): Dictionary mapping field names to lists of valid choices
+        """
+        self.combo_choices = combo_choices
+
+    def load_data(self, data, root_name="root"):
+        """Load a Python object into the tree for viewing/editing.
+
+        Args:
+            data: Python object (dict, list, or primitive) to load into the tree
+            root_name (str, optional): Name for the root node. Defaults to "root".
+        """
+        self.delete_tree_nodes()
+        self.insert_tree_node(root_name, value=data)
+        self.expand_tree()
+
+        # Set selection and allow keyboard browsing
+        children = self.tree.get_children()
+        if children:
+            first = children[0]
+            self.tree.selection_set(first)
+            self.tree.focus(first)
+            self.tree.see(first)
+            self.tree.focus_set()
+
+    def get_data(self):
+        """Extract and return the Python object from the tree.
+
+        Returns:
+            Python object (dict, list, or primitive) representing the tree contents
+        """
+        children = self.tree.get_children()
+        if not children:
+            return None
+        return self.extract_obj_from_tree(children[0])
 
     def close_cell_popup(self):
         """Closes Edit pop-up widget, if it exists
@@ -113,8 +165,8 @@ class JSONTreeFrame(ttk.Frame):
         if self.popup and self.popup.winfo_exists():
             self.popup.update()
             self.popup = None
-            
-            
+
+
     def on_return_press(self, event: tk.Event) -> None:
         self.make_popup(rowid=self.tree.focus(), column="#1")
 
@@ -127,20 +179,20 @@ class JSONTreeFrame(ttk.Frame):
         """
         rowid = self.tree.identify_row(event.y)      # like "I001"
         column = self.tree.identify_column(event.x)  # like "#0"
-        self.make_popup(rowid, column)        
+        self.make_popup(rowid, column)
 
 
     def make_popup(self, rowid, column):
         self.close_cell_popup()
 
-        if rowid == '':  # happens if clicked in empty space or header 
-            return        
-        
+        if rowid == '':  # happens if clicked in empty space or header
+            return
+
         selected_item = self.tree.item(rowid)
-        
+
         if "NoneType" in selected_item["tags"]:
             return  # no editing of NoneType items
-        
+
         if column == "#0":
             selected_value = selected_item["text"]
         else:
@@ -148,85 +200,44 @@ class JSONTreeFrame(ttk.Frame):
                 selected_value = selected_item["values"][0]
             except IndexError:   # This happens in list and dict rows and value column -> not editable
                 return
-        
+
         # get cell position info
         x, y, width, height = self.tree.bbox(rowid, column)
         y += height / 2
         height *= 1.2    # make the popup a little larger than the regular cell
-                
+
         if "bool" in selected_item["tags"]:
             self.popup = CheckPopup(self.tree, rowid, selected_value)
-                    
-        elif column != "#0" and selected_item["text"] in self.combo_choice:
-            choices = self.combo_choice[selected_item["text"]]
+
+        elif column != "#0" and selected_item["text"] in self.combo_choices:
+            choices = self.combo_choices[selected_item["text"]]
             self.popup = ComboPopup(self.tree, rowid, selected_value, values=choices)
-            
+
         else:
             self.popup = EntryPopup(self.tree, rowid, column, selected_value)
-            
-        self.popup.focus()                                                # This code would usually be in 
-        self.popup.bind("<Return>", lambda event: self.popup.update())    # the Popup __init__, but that 
-        self.popup.bind("<Escape>", self.on_escape)                       # would result in 3 copies  
+
+        self.popup.focus()                                                # This code would usually be in
+        self.popup.bind("<Return>", lambda event: self.popup.update())    # the Popup __init__, but that
+        self.popup.bind("<Escape>", self.on_escape)                       # would result in 3 copies
         self.popup.place(x=x, y=y, width=width, height=height, anchor='w')
 
 
     def on_escape(self, event):
         self.tree.focus_set()
         self.popup.destroy()
-        
-    
+
+
     def get_all_children(self, item: str = "") -> list[str]:
         children = self.tree.get_children(item)
         for child in children:
             children += self.get_all_children(child)
         return children
-    
-    
+
+
     def expand_tree(self, expand: bool = True) -> None:
         for item in self.get_all_children():
             self.tree.item(item, open=expand)
-            
-                     
-    def load_json_file(self) -> None:
-        """Launches a filepicker to select a file, that will be read as json and inserted into the tree.
-        """
-        fp = filedialog.askopenfilename(initialdir=self.path, filetypes=[("JSON files", "*.json"), ("All Files", "*.*")])
-        if not fp:
-            return
-        
-        try:
-            with open(fp, "r") as file:
-                obj = json.load(file)
-        except Exception:
-            messagebox.showwarning(title="Warning", message=f"Could not open '{fp}'!")
-            return
-                
-        self.delete_tree_nodes()
-        self.insert_tree_node(file.name, value=obj)
-        self.expand_tree()
-        
-        # set selection and allow keyboard browsing
-        first = self.tree.get_children()[0]
-        self.tree.selection_set(first)  # move selection
-        self.tree.focus(first)  # move focus
-        self.tree.see(first)  # scroll to show it
-        self.tree.focus_set()
 
-
-    def save_json_file(self):
-        """Launches a filepicker and saves the current tree content as json to that file path.
-        """
-        fp = filedialog.asksaveasfilename(initialdir=self.path, filetypes=[("JSON files", "*.json"), ("All Files", "*.*")])
-        if not fp:
-            return
-
-        obj = self.extract_obj_from_tree()
-        try:
-            with open(fp, "w") as file:
-                json.dump(obj, file)
-        except Exception:
-            messagebox.showwarning(title="Warning", message=f"Could not open '{fp}'!")
-        
 
     def insert_tree_node(self, field: str, value: object, node: str = '') -> None:
         """Inserts a tree node (consisting of field name and value) at the node (tree position).
@@ -242,59 +253,51 @@ class JSONTreeFrame(ttk.Frame):
             node = self.tree.insert(node, tk.END, text=field, tags=type_tag)
             for key, val in value.items():
                 self.insert_tree_node(key, val, node)
-                
+
         elif type(value) is list:
             node = self.tree.insert(node, tk.END, text=field, tags=type_tag)
             for i, val in enumerate(value):
                 self.insert_tree_node(i, val, node)
 
         else:
-            self.tree.insert(node, tk.END, text=field, values=[value], tags=type_tag)        
-        
-        
+            self.tree.insert(node, tk.END, text=field, values=[value], tags=type_tag)
+
+
     def delete_tree_nodes(self):
         for child in self.tree.get_children():
             self.tree.delete(child)
 
 
-    def extract_obj_from_tree(self, node: str = "I001") -> object:
+    def extract_obj_from_tree(self, node: str) -> object:
         """Extracts the (JSON-able) Python object from the tree (Tkinter TreeView)
 
         Args:
-            node (str, optional): TreeView node reference. Defaults to "I001" (root).
+            node (str): TreeView node reference.
 
         Returns:
             object: Python object extracted from the treeview
         """
         if not self.tree.exists(node) or self.tree.tag_has("NoneType", node):
             return None
-        
+
         if self.tree.tag_has("dict", node):
             obj = {}
             for child in self.tree.get_children(node):
                 obj[self.tree.item(child)["text"]] = self.extract_obj_from_tree(child)
             return obj
-                
+
         if self.tree.tag_has("list", node):
             return [self.extract_obj_from_tree(child) for child in self.tree.get_children(node)]
-                
+
         obj = self.tree.item(node)['values'][0]
         try:
             if self.tree.tag_has("int", node):
-                return int(obj)            
+                return int(obj)
             if self.tree.tag_has("float", node):
                 return float(obj)
             if self.tree.tag_has("bool", node):
                 return obj == "True"
         except ValueError:
-            return obj        
-        
+            return obj
+
         return obj  # that covers the regular 'str' type
-
-
-if __name__ == '__main__':
-    app = tk.Tk()
-    app.title('Tkinter JSON Editor')
-    app.geometry("500x300-10+30")
-    JSONTreeFrame(app)
-    app.mainloop()

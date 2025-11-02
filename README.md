@@ -1,10 +1,20 @@
-# Tkinter JSON Editor
+# TreeEditFrame - Hierarchical Data Editor for Tkinter
 
-A versatile Tkinter GUI application for viewing and editing JSON files. JSON files can be used for all kinds of configurations and data (such as test results), making this editor a useful building block for Tkinter GUI applications.
+A reusable Tkinter component for viewing and editing hierarchical data structures (dicts, lists, primitives) with an in-place tree editor. The project includes both the reusable component and a JSON editor example application.
 
-## Features
+## Project Structure
 
-- Load and save JSON files with a graphical tree view
+- **[tree_edit_frame.py](tree_edit_frame.py)** - Reusable TreeEditFrame component (use this in your own applications)
+- **[json_editor_example.py](json_editor_example.py)** - Example application demonstrating JSON file editing
+- **[combo_choice.json](combo_choice.json)** - Optional configuration for field-specific dropdown choices
+- **[example.json](example.json)** - Sample JSON file for testing
+
+## TreeEditFrame Component
+
+The `TreeEditFrame` is a reusable Tkinter widget that provides a Treeview with in-place editing capabilities for hierarchical data.
+
+### Features
+
 - Edit values directly by double-clicking cells or pressing Enter
 - Type-aware editing with appropriate widgets for each data type:
 
@@ -16,19 +26,89 @@ A versatile Tkinter GUI application for viewing and editing JSON files. JSON fil
   | `bool` | `ttk.Checkbutton` | Toggle between True/False |
   | `str` with choices | `ttk.Combobox` | Dropdown selection from predefined choices |
 
-- Combobox choices are configured via `combo_choice.json`. For example:
-  ```json
-  {"pattern": ["PRBS7", "PRBS31", "fast-clock", "slow-clock"]}
-  ```
-- Expand/collapse tree view for better navigation
+- Headless component (no file I/O - you control data loading/saving)
+- Optional combo choices for dropdown field selection
+- Expand/collapse tree navigation
 - Keyboard navigation support
 
-## Usage
+### Basic Usage
 
-Run the editor:
-```bash
-python json_editor.py
+```python
+import tkinter as tk
+from tree_edit_frame import TreeEditFrame
+
+# Create your application window
+app = tk.Tk()
+
+# Create the TreeEditFrame component
+tree_editor = TreeEditFrame(app, combo_choices={'status': ['active', 'inactive']})
+tree_editor.pack(fill=tk.BOTH, expand=True)
+
+# Load your data
+data = {'name': 'Example', 'value': 42, 'nested': {'key': 'value'}}
+tree_editor.load_data(data)
+
+# ... user edits the data ...
+
+# Get the edited data back
+edited_data = tree_editor.get_data()
+print(edited_data)
+
+app.mainloop()
 ```
+
+### API Reference
+
+**Constructor:**
+```python
+TreeEditFrame(master, combo_choices=None)
+```
+- `master`: Parent Tkinter widget
+- `combo_choices` (optional): Dict mapping field names to lists of valid choices
+
+**Methods:**
+- `load_data(data, root_name="root")` - Load Python object into tree
+- `get_data()` - Extract Python object from tree
+- `set_combo_choices(combo_choices)` - Update combo choices dictionary
+- `expand_tree(expand=True)` - Expand/collapse all tree nodes
+
+## JSON Editor Example
+
+The [json_editor_example.py](json_editor_example.py) demonstrates how to use TreeEditFrame to build a complete JSON file editor with load/save functionality.
+
+### Running the Example
+
+```bash
+python json_editor_example.py
+```
+
+### Example Features
+
+- Load JSON files via file dialog
+- Save edited JSON with proper indentation
+- Uses [combo_choice.json](combo_choice.json) for field-specific dropdowns
+- Expand/collapse buttons for tree navigation
+
+### Combo Choices Configuration
+
+The example uses [combo_choice.json](combo_choice.json) to define dropdown choices for specific fields:
+
+```json
+{"pattern": ["PRBS7", "PRBS31", "fast-clock", "slow-clock"]}
+```
+
+When editing a field named "pattern", a dropdown will appear with these predefined choices instead of a text entry field.
+
+## Use Cases
+
+TreeEditFrame can be used for editing any hierarchical data structure:
+- JSON configuration files
+- YAML config editors
+- XML data viewers
+- Application settings interfaces
+- Test result viewers
+- API response explorers
+- Database record editors
 
 ## References
 
