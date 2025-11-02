@@ -6,7 +6,6 @@ A reusable Tkinter component for viewing and editing hierarchical data structure
 
 - **[tree_edit_frame.py](tree_edit_frame.py)** - Reusable TreeEditFrame component (use this in your own applications)
 - **[json_editor_example.py](json_editor_example.py)** - Example application demonstrating JSON file editing
-- **[combo_choice.json](combo_choice.json)** - Optional configuration for field-specific dropdown choices
 - **[example.json](example.json)** - Sample JSON file for testing
 
 ## TreeEditFrame Component
@@ -86,15 +85,17 @@ python json_editor_example.py
 
 - Load JSON files via file dialog
 - Save edited JSON with proper indentation
-- Uses [combo_choice.json](combo_choice.json) for field-specific dropdowns
+- Demonstrates combo choices for field-specific dropdowns (see "pattern" field in [example.json](example.json))
 - Expand/collapse buttons for tree navigation
 
-### Combo Choices Configuration
+### Combo Choices
 
-The example uses [combo_choice.json](combo_choice.json) to define dropdown choices for specific fields:
+The example demonstrates how to configure dropdown choices for specific fields. In [json_editor_example.py](json_editor_example.py), combo choices are defined as:
 
-```json
-{"pattern": ["PRBS7", "PRBS31", "fast-clock", "slow-clock"]}
+```python
+combo_choices = {
+    "pattern": ["PRBS7", "PRBS31", "fast-clock", "slow-clock"]
+}
 ```
 
 When editing a field named "pattern", a dropdown will appear with these predefined choices instead of a text entry field.

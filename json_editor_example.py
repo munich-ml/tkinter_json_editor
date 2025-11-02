@@ -32,16 +32,14 @@ class JSONEditorApp(ttk.Frame):
         ttk.Button(self.control_frame, text="expand", command=self.expand_tree).pack(side=tk.LEFT)
         ttk.Button(self.control_frame, text="collapse", command=self.collapse_tree).pack(side=tk.LEFT)
 
-        # Load combo choices configuration
-        self.path = os.path.dirname(__file__)
-        combo_choices = {}
-        try:
-            with open(os.path.join(self.path, "combo_choice.json"), "r") as file:
-                combo_choices = json.load(file)
-        except FileNotFoundError:
-            pass  # combo_choice.json is optional
+        # Define combo choices for specific fields
+        # This provides dropdown options for the "pattern" field in the example.json
+        combo_choices = {
+            "pattern": ["PRBS7", "PRBS31", "fast-clock", "slow-clock"]
+        }
 
         # Create the reusable TreeEditFrame component
+        self.path = os.path.dirname(__file__)
         self.tree_editor = TreeEditFrame(self, combo_choices=combo_choices)
 
     def expand_tree(self):
