@@ -9,8 +9,8 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 
-class EntryPopup(ttk.Entry):
-    """Popup edit widget for str, int and float type fields
+class _EntryPopup(ttk.Entry):
+    """Popup edit widget for str, int and float type fields (internal use only)
     """
     def __init__(self, parent, iid, col, initial_value, **kwargs):
         super().__init__(parent, **kwargs)
@@ -43,8 +43,8 @@ class EntryPopup(ttk.Entry):
         self.destroy()
 
 
-class ComboPopup(ttk.Combobox):
-    """Popup edit widget for str type fields with combo_choice
+class _ComboPopup(ttk.Combobox):
+    """Popup edit widget for str type fields with combo_choice (internal use only)
     """
     def __init__(self, parent, iid, initial_value, **kwargs):
         super().__init__(parent, state="readonly", **kwargs)
@@ -60,8 +60,8 @@ class ComboPopup(ttk.Combobox):
         self.destroy()
 
 
-class CheckPopup(ttk.Checkbutton):
-    """Popup edit widget for bool type fields
+class _CheckPopup(ttk.Checkbutton):
+    """Popup edit widget for bool type fields (internal use only)
     """
     def __init__(self, parent, iid, initial_value, **kwargs):
         self.is_checked = tk.BooleanVar(parent)
@@ -207,14 +207,14 @@ class TreeEditFrame(ttk.Frame):
         height *= 1.2    # make the popup a little larger than the regular cell
 
         if "bool" in selected_item["tags"]:
-            self.popup = CheckPopup(self.tree, rowid, selected_value)
+            self.popup = _CheckPopup(self.tree, rowid, selected_value)
 
         elif column != "#0" and selected_item["text"] in self.combo_choices:
             choices = self.combo_choices[selected_item["text"]]
-            self.popup = ComboPopup(self.tree, rowid, selected_value, values=choices)
+            self.popup = _ComboPopup(self.tree, rowid, selected_value, values=choices)
 
         else:
-            self.popup = EntryPopup(self.tree, rowid, column, selected_value)
+            self.popup = _EntryPopup(self.tree, rowid, column, selected_value)
 
         self.popup.focus()                                                # This code would usually be in
         self.popup.bind("<Return>", lambda event: self.popup.update())    # the Popup __init__, but that
