@@ -7,13 +7,13 @@ from tkinter import filedialog, messagebox
 class EntryPopup(ttk.Entry):
     """Popup edit widget for str, int and float type fields
     """
-    def __init__(self, parent, iid, col, inital_value, **kwargs):
+    def __init__(self, parent, iid, col, initial_value, **kwargs):
         super().__init__(parent, **kwargs)
         self.tree = parent
         self.iid = iid
         self.col = col
 
-        self.insert(0, inital_value)
+        self.insert(0, initial_value)
         self.select_range(0, tk.END)
 
     def update(self):
@@ -41,13 +41,13 @@ class EntryPopup(ttk.Entry):
 class ComboPopup(ttk.Combobox):
     """Popup edit widget for str type fields with combo_choice
     """
-    def __init__(self, parent, iid, inital_value, **kwargs):
+    def __init__(self, parent, iid, initial_value, **kwargs):
         super().__init__(parent, state="readonly", **kwargs)
         self.tree = parent
         self.iid = iid
         self.choices = kwargs["values"]
 
-        self.set(inital_value)
+        self.set(initial_value)
 
     def update(self):
         self.tree.item(self.iid, values=[self.get()])
@@ -58,9 +58,9 @@ class ComboPopup(ttk.Combobox):
 class CheckPopup(ttk.Checkbutton):
     """Popup edit widget for bool type fields
     """
-    def __init__(self, parent, iid, inital_value, **kwargs):
+    def __init__(self, parent, iid, initial_value, **kwargs):
         self.is_checked = tk.BooleanVar(parent)
-        self.is_checked.set("True" == inital_value)  # Treeview stores also bools as str!
+        self.is_checked.set("True" == initial_value)  # Treeview stores also bools as str!
         super().__init__(parent, onvalue=True, offvalue=False, variable=self.is_checked, **kwargs)
         self.tree = parent
         self.iid = iid
@@ -81,7 +81,7 @@ class JSONTreeFrame(ttk.Frame):
         ttk.Button(self.control_frame, text="load JSON file", command=self.load_json_file).pack(side=tk.LEFT)
         ttk.Button(self.control_frame, text="save JSON file", command=self.save_json_file).pack(side=tk.LEFT)
         ttk.Button(self.control_frame, text="expand", command=self.expand_tree).pack(side=tk.LEFT)
-        ttk.Button(self.control_frame, text="collape", command=lambda: self.expand_tree(expand=False)).pack(side=tk.LEFT)
+        ttk.Button(self.control_frame, text="collapse", command=lambda: self.expand_tree(expand=False)).pack(side=tk.LEFT)
         
         tree_frame = ttk.Frame(self)
         tree_frame.pack(fill=tk.BOTH, expand=True)
@@ -108,7 +108,7 @@ class JSONTreeFrame(ttk.Frame):
 
 
     def close_cell_popup(self):
-        """Closes Edit pop-up widget, if is exists
+        """Closes Edit pop-up widget, if it exists
         """
         if self.popup and self.popup.winfo_exists():
             self.popup.update()
@@ -235,7 +235,7 @@ class JSONTreeFrame(ttk.Frame):
         Args:
             field (str): field name in the tree
             value (JSON-able object): Value in the tree
-            node (str, optional): _description_. Defaults to ''.
+            node (str, optional): Parent node ID where this node will be inserted. Defaults to '' (root).
         """
         type_tag = str(type(value)).split("'")[1]
         if type(value) is dict:
@@ -294,7 +294,7 @@ class JSONTreeFrame(ttk.Frame):
 
 if __name__ == '__main__':
     app = tk.Tk()
-    app.title('Tkinter JSON Editor2')
+    app.title('Tkinter JSON Editor')
     app.geometry("500x300-10+30")
     JSONTreeFrame(app)
     app.mainloop()
