@@ -53,6 +53,14 @@ tree_editor.set_data(data)
 edited_data = tree_editor.get_data()
 print(edited_data)
 
+# For read-only viewing:
+# readonly_tree = TreeEditFrame(app, editable=False)
+# readonly_tree.set_data(data)
+
+# Or toggle editing dynamically:
+# tree_editor.set_editable(False)  # Make read-only
+# tree_editor.set_editable(True)   # Make editable again
+
 app.mainloop()
 ```
 
@@ -60,15 +68,17 @@ app.mainloop()
 
 **Constructor:**
 ```python
-TreeEditFrame(master, combo_choices=None)
+TreeEditFrame(master, combo_choices=None, editable=True)
 ```
 - `master`: Parent Tkinter widget
 - `combo_choices` (optional): Dict mapping field names to lists of valid choices
+- `editable` (optional): Enable/disable editing mode (default: True)
 
 **Methods:**
 - `set_data(data, root_name="root")` - Load Python object into tree
 - `get_data()` - Extract Python object from tree
 - `set_combo_choices(combo_choices)` - Update combo choices dictionary
+- `set_editable(editable)` - Enable/disable editing mode dynamically
 - `expand_tree(expand=True)` - Expand/collapse all tree nodes
 
 ## JSON Editor Example

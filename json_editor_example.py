@@ -32,6 +32,15 @@ class JSONEditorApp(ttk.Frame):
         ttk.Button(self.control_frame, text="expand", command=self.expand_tree).pack(side=tk.LEFT)
         ttk.Button(self.control_frame, text="collapse", command=self.collapse_tree).pack(side=tk.LEFT)
 
+        # Add editable checkbox
+        self.editable_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(
+            self.control_frame,
+            text="Editable",
+            variable=self.editable_var,
+            command=self.toggle_editable
+        ).pack(side=tk.LEFT, padx=(10, 0))
+
         # Define combo choices for specific fields
         # This provides dropdown options for the "pattern" field in the example.json
         combo_choices = {
@@ -49,6 +58,10 @@ class JSONEditorApp(ttk.Frame):
     def collapse_tree(self):
         """Collapse all nodes in the tree"""
         self.tree_editor.expand_tree(expand=False)
+
+    def toggle_editable(self):
+        """Toggle editing mode based on checkbox state"""
+        self.tree_editor.set_editable(self.editable_var.get())
 
     def load_json_file(self) -> None:
         """Launches a file picker to select a JSON file and loads it into the tree.

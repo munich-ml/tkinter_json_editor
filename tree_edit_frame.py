@@ -87,16 +87,22 @@ class TreeEditFrame(ttk.Frame):
         master: Parent Tkinter widget
         combo_choices (dict, optional): Dictionary mapping field names to lists of choices
                                        for dropdown selection. Defaults to None (empty dict).
+        editable (bool, optional): Enable/disable editing mode. Defaults to True.
 
     Example:
+        # Create editable tree (default)
         frame = TreeEditFrame(parent, combo_choices={'pattern': ['opt1', 'opt2']})
         frame.pack(fill=tk.BOTH, expand=True)
         frame.set_data({'key': 'value', 'nested': {'a': 1}})
         # ... user edits ...
         data = frame.get_data()
+
+        # Create read-only tree
+        readonly_frame = TreeEditFrame(parent, editable=False)
+        readonly_frame.set_data(data)
     """
 
-    def __init__(self, master, combo_choices=None):
+    def __init__(self, master, combo_choices=None, editable=True):
         super().__init__(master)
         self.pack(fill=tk.BOTH, expand=True)
 
@@ -114,11 +120,15 @@ class TreeEditFrame(ttk.Frame):
         self.tree.configure(yscroll=ysb.set)
         ysb.grid(row=0, column=1, sticky="ns")
         self.tree.bind("<Button-1>", lambda event: self.close_cell_popup())
-        self.tree.bind("<Double-1>", self.on_double_click)
-        self.tree.bind("<Return>", self.on_return_press)
 
+        self.editable = editable
         self.popup = None    # Popup widget for cell editing
         self.combo_choices = combo_choices if combo_choices is not None else {}
+
+        # Conditionally bind editing events based on editable flag
+        if self.editable:
+            self.tree.bind("<Double-1>", self.on_double_click)
+            self.tree.bind("<Return>", self.on_return_press)
 
     def set_combo_choices(self, combo_choices):
         """Update the combo choices dictionary for dropdown field selection.
@@ -127,6 +137,25 @@ class TreeEditFrame(ttk.Frame):
             combo_choices (dict): Dictionary mapping field names to lists of valid choices
         """
         self.combo_choices = combo_choices
+
+    def set_editable(self, editable):
+        """Enable or disable editing mode.
+
+        Args:
+            editable (bool): True to enable editing, False for read-only mode
+        """
+        was_editable = self.editable
+        self.editable = editable
+
+        if was_editable and not editable:
+            # Switching from editable to read-only
+            self.tree.unbind("<Double-1>")
+            self.tree.unbind("<Return>")
+            self.close_cell_popup()  # Close any open popup
+        elif not was_editable and editable:
+            # Switching from read-only to editable
+            self.tree.bind("<Double-1>", self.on_double_click)
+            self.tree.bind("<Return>", self.on_return_press)
 
     def set_data(self, data, root_name="root"):
         """Set a Python object into the tree for viewing/editing.
@@ -183,6 +212,9 @@ class TreeEditFrame(ttk.Frame):
 
 
     def make_popup(self, rowid, column):
+        if not self.editable:
+            return  # Don't create popups in read-only mode
+
         self.close_cell_popup()
 
         if rowid == '':  # happens if clicked in empty space or header
