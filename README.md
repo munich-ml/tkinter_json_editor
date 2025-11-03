@@ -110,6 +110,10 @@ combo_choices = {
 
 When editing a field named "pattern", a dropdown will appear with these predefined choices instead of a text entry field.
 
+## Architecture
+
+TreeEditFrame is a **headless component** - it provides the tree editing UI but does NOT handle file I/O. You control how data is loaded and saved, making it reusable for any hierarchical data source.
+
 ## Use Cases
 
 TreeEditFrame can be used for editing any hierarchical data structure:
@@ -120,6 +124,10 @@ TreeEditFrame can be used for editing any hierarchical data structure:
 - Test result viewers
 - API response explorers
 - Database record editors
+
+## Requirements
+
+- Python 3.x with tkinter (standard library - no additional dependencies)
 
 ## References
 
