@@ -111,6 +111,36 @@ combo_choices = {
 
 When editing a field named "pattern", a dropdown will appear with these predefined choices instead of a text entry field.
 
+## Installation
+
+### For Users
+
+```bash
+# Install from PyPI (when published)
+pip install tree-edit-frame
+
+# Or install from source
+git clone https://github.com/munich-ml/tkinter_json_editor.git
+cd tkinter_json_editor
+pip install .
+```
+
+### For Development
+
+```bash
+# Clone the repository
+git clone https://github.com/munich-ml/tkinter_json_editor.git
+cd tkinter_json_editor
+
+# Install in editable mode (changes to code take effect immediately)
+uv pip install -e .
+# Or with regular pip:
+# pip install -e .
+
+# Run the example
+python examples/json_editor_example.py
+```
+
 ## Architecture
 
 TreeEditFrame is a **headless component** - it provides the tree editing UI but does NOT handle file I/O. You control how data is loaded and saved, making it reusable for any hierarchical data source.
