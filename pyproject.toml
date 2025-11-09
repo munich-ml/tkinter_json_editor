@@ -1,9 +1,9 @@
 [project]
-name = "tkinter-json-editor"
+name = "tree-edit-frame"
 version = "0.1.0"
-description = "Add your description here"
+description = "A reusable Tkinter component for editing hierarchical data structures"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.7"
 dependencies = []
 
 [build-system]
