@@ -4,9 +4,10 @@ A reusable Tkinter component for viewing and editing hierarchical data structure
 
 ## Project Structure
 
-- **[tree_edit_frame.py](tree_edit_frame.py)** - Reusable TreeEditFrame component (use this in your own applications)
-- **[json_editor_example.py](json_editor_example.py)** - Example application demonstrating JSON file editing
-- **[example.json](example.json)** - Sample JSON file for testing
+- **[src/tree_edit_frame.py](src/tree_edit_frame.py)** - Reusable TreeEditFrame component (use this in your own applications)
+- **[examples/json_editor_example.py](examples/json_editor_example.py)** - Example application demonstrating JSON file editing
+- **[examples/example.json](examples/example.json)** - Sample JSON file for testing
+- **[tests/](tests/)** - Test suite (to be implemented)
 
 ## TreeEditFrame Component
 

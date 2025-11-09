@@ -6,9 +6,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TreeEditFrame is a **headless component** - it provides the tree editing UI but does NOT handle file I/O. Applications using it control data loading/saving. This separation allows the component to be used for any hierarchical data (JSON, YAML, XML, configs, etc.), not just JSON files.
 
+## Project Structure
+
+```
+tkinter_json_editor/
+├── src/
+│   └── tree_edit_frame.py          # Main library module
+├── examples/
+│   ├── json_editor_example.py      # Demo application
+│   └── example.json                # Sample data
+├── tests/
+│   └── (empty - to be implemented)
+├── pyproject.toml                   # Package configuration (to be created)
+├── README.md
+├── CLAUDE.md
+├── TODO.md
+└── LICENSE
+```
+
 ## Code Architecture
 
-### TreeEditFrame Component (tree_edit_frame.py)
+### TreeEditFrame Component (src/tree_edit_frame.py)
 
 **Module Structure**:
 - Only `TreeEditFrame` is public (exported for external use)
