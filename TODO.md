@@ -22,11 +22,6 @@
   - Consider lazy loading for large trees
   - Consider virtual scrolling if needed
 
-## Project Setup
-- [ ] Add pyproject.toml for uv package management
-  - Define project metadata
-  - Specify Python version requirements
-  - Add optional dev dependencies (pytest, etc.)
 
 ## Future Enhancements (Optional)
 - [ ] Add/delete nodes functionality
